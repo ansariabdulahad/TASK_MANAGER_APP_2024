@@ -2,6 +2,8 @@ import { config } from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import { connectToMongoDb } from './utils/db.js';
+import userRouter from './routes/user-route.js';
+import taskRouter from './routes/task-route.js';
 
 // dotenv configuration
 config();
@@ -17,7 +19,11 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+app.use(express.json());
+
 // routes handler
+app.use('/api/user', userRouter);
+app.use('/api/tasks', taskRouter);
 
 // error handler
 app.use((err, req, res, next) => {
