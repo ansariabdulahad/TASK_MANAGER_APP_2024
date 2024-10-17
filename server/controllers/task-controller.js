@@ -30,7 +30,13 @@ export const createTask = async (req, res) => {
 export const getAllTasks = async (req, res) => {
     try {
         const { userId } = req.user;
-        const tasks = await Task.find({ userId });
+        const { category, status } = req.query;
+        let filter = { userId };
+
+        if (category) filter.category = category;
+        if (status) filter.status = status;
+
+        const tasks = await Task.find(filter);
         res.status(200).json({
             success: true,
             message: "Task fetched successfully",
