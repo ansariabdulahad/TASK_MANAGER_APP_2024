@@ -4,6 +4,7 @@ import cors from 'cors';
 import { connectToMongoDb } from './utils/db.js';
 import userRouter from './routes/user-route.js';
 import taskRouter from './routes/task-route.js';
+import categoryRouter from './routes/category-route.js';
 
 // dotenv configuration
 config();
@@ -24,6 +25,7 @@ app.use(express.json());
 // routes handler
 app.use('/api/user', userRouter);
 app.use('/api/tasks', taskRouter);
+app.use('/api/categories', categoryRouter);
 
 // error handler
 app.use((err, req, res, next) => {

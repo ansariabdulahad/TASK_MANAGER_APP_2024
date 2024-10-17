@@ -1,90 +1,96 @@
-import Task from '../models/Task-model.js';
+import Category from '../models/Category-model.js';
 
 // create a new Task
-export const createTask = async (req, res) => {
+export const createCategory = async (req, res) => {
     try {
-        const data = req.body;
-        const task = await Task.create(data);
+        const { category } = req.body;
+        const { userId } = req.user;
+
+        const newCategory = new Category({
+            userId,
+            category
+        });
+        await newCategory.save();
         res.status(201).json({
             success: true,
-            message: "Task created successfully",
-            data: task
+            message: "Category created successfully",
+            data: newCategory
         });
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: "Error occurred in createTask",
+            message: "Error occurred in createCategory",
             error: error
         });
     }
 }
 
 // get all tasks
-export const getAllTasks = async (req, res) => {
+export const getAllCategory = async (req, res) => {
     try {
-        const tasks = await Task.find();
+        const Categories = await Category.find();
         res.status(200).json({
             success: true,
-            message: "Task fetched successfully",
-            data: tasks
+            message: "categories fetched successfully",
+            data: Categories
         });
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: "Error occurred in createTask",
+            message: "Error occurred in getAllCategory",
             error: error
         });
     }
 }
 
 // edit a task
-export const editTask = async (req, res) => {
+export const editCategory = async (req, res) => {
     try {
         const data = req.body;
         const { id } = req.params;
 
-        const updatedTask = await Task.findByIdAndUpdate(id, data, { new: true });
+        const updatedCategory = await Category.findByIdAndUpdate(id, data, { new: true });
 
-        if (!updatedTask) return res.status(404).json({
+        if (!updatedCategory) return res.status(404).json({
             success: false,
-            message: "Task not found",
+            message: "Category not found",
         });
 
         res.status(200).json({
             success: true,
-            message: "Task updated successfully",
-            data: updatedTask
+            message: "category updated successfully",
+            data: updatedCategory
         });
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: "Error occurred in createTask",
+            message: "Error occurred in updateCategory",
             error: error
         });
     }
 }
 
 // delete a task
-export const deleteTask = async (req, res) => {
+export const deleteCategory = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const deletedTask = await Task.findByIdAndDelete(id);
+        const deletedCategory = await Category.findByIdAndDelete(id);
 
-        if (!deletedTask) return res.status(404).json({
+        if (!deletedCategory) return res.status(404).json({
             success: false,
-            message: "Task not found",
+            message: "Category not found",
         });
 
         res.status(200).json({
             success: true,
-            message: "Task deleted successfully",
-            data: deletedTask
+            message: "Category deleted successfully",
+            data: deletedCategory
         });
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: "Error occurred in createTask",
+            message: "Error occurred in deleteCategory",
             error: error
         });
     }

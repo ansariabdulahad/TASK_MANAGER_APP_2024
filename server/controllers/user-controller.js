@@ -74,3 +74,18 @@ export const loginUser = async (req, res) => {
         });
     }
 }
+
+export const logoutUser = async (req, res) => {
+    try {
+        res.status(200).json({
+            success: true,
+            message: "User logged out successfully"
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error occurred in logout user",
+            error: error
+        });
+    }
+}

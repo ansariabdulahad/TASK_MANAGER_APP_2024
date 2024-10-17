@@ -3,12 +3,19 @@ import Task from '../models/Task-model.js';
 // create a new Task
 export const createTask = async (req, res) => {
     try {
-        const data = req.body;
-        const task = await Task.create(data);
+        const { title, description, status, dueDate, category } = req.body;
+        const { userId } = req.user;
+
+        const newTask = new Task({
+            userId,
+            title, description, status, dueDate, category
+        });
+        await newTask.save();
+
         res.status(201).json({
             success: true,
             message: "Task created successfully",
-            data: task
+            data: newTask
         });
     } catch (error) {
         res.status(500).json({
