@@ -28,7 +28,9 @@ export const createCategory = async (req, res) => {
 // get all tasks
 export const getAllCategory = async (req, res) => {
     try {
-        const Categories = await Category.find();
+        const { userId } = req.user;
+
+        const Categories = await Category.find({ userId });
         res.status(200).json({
             success: true,
             message: "categories fetched successfully",
@@ -48,8 +50,9 @@ export const editCategory = async (req, res) => {
     try {
         const data = req.body;
         const { id } = req.params;
+        const { userId } = req.user;
 
-        const updatedCategory = await Category.findByIdAndUpdate(id, data, { new: true });
+        const updatedCategory = await Category.findOneAndUpdate({ _id: id, userId }, data, { new: true });
 
         if (!updatedCategory) return res.status(404).json({
             success: false,
@@ -74,8 +77,9 @@ export const editCategory = async (req, res) => {
 export const deleteCategory = async (req, res) => {
     try {
         const { id } = req.params;
+        const { userId } = req.user;
 
-        const deletedCategory = await Category.findByIdAndDelete(id);
+        const deletedCategory = await Category.findOneAndDelete({ _id: id, userId });
 
         if (!deletedCategory) return res.status(404).json({
             success: false,

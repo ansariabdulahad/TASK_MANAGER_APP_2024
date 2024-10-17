@@ -29,7 +29,8 @@ export const createTask = async (req, res) => {
 // get all tasks
 export const getAllTasks = async (req, res) => {
     try {
-        const tasks = await Task.find();
+        const { userId } = req.user;
+        const tasks = await Task.find({ userId });
         res.status(200).json({
             success: true,
             message: "Task fetched successfully",
@@ -49,18 +50,19 @@ export const editTask = async (req, res) => {
     try {
         const data = req.body;
         const { id } = req.params;
+        const { userId } = req.user;
 
-        const updatedTask = await Task.findByIdAndUpdate(id, data, { new: true });
+        const updatedTask = await Task.updateOne({ _id: id, userId }, data, { new: true });
 
-        if (!updatedTask) return res.status(404).json({
+        if (updatedTask.modifiedCount === 0) return res.status(404).json({
             success: false,
-            message: "Task not found",
+            message: "Task not found or not updated",
         });
 
         res.status(200).json({
             success: true,
             message: "Task updated successfully",
-            data: updatedTask
+            data: await Task.findById(id)
         });
     } catch (error) {
         res.status(500).json({
@@ -75,8 +77,12 @@ export const editTask = async (req, res) => {
 export const deleteTask = async (req, res) => {
     try {
         const { id } = req.params;
+        const { userId } = req.user;
 
-        const deletedTask = await Task.findByIdAndDelete(id);
+        const deletedTask = await Task.findOneAndDelete({
+            _id: id,
+            userId
+        });
 
         if (!deletedTask) return res.status(404).json({
             success: false,
