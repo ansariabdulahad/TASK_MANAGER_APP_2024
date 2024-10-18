@@ -13,6 +13,14 @@ export const signupUser = async (req, res) => {
             message: "User already exists, please login"
         });
 
+        // check mobile
+        const mobile = await User.findOne({ mobile: data.mobile });
+
+        if (mobile) return res.status(401).json({
+            success: false,
+            message: "Mobile already exists, try other"
+        });
+
         // register user
         const newUser = new User(data);
         await newUser.save();

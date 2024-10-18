@@ -1,15 +1,26 @@
-import { Button, Form, Input } from 'antd'
+import { Form, message } from 'antd'
 import React from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import CommonForm from '../components/CommonForm'
 import { loginFormFields } from '../config/formFields'
+import { useDispatch } from 'react-redux'
+import { loginUser } from '../store/slices/auth-slice'
 
 const Login = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const [loginForm] = Form.useForm();
 
     const handleOnSubmit = (values) => {
-        console.log(values);
-        navigate('/app/task');
+        dispatch(loginUser(values)).then((data) => {
+            if (data.payload.success) {
+                message.success(data.payload.message || "Login successful!");
+                loginForm.resetFields();
+                navigate('/app/task');
+            } else {
+                message.error(data.payload.response.data.message || "Login Failed, try again!");
+            }
+        });
     }
 
     return (
@@ -22,6 +33,7 @@ const Login = () => {
                     buttonText={'Login Now'}
                     onSubmit={handleOnSubmit}
                     formType={'login'}
+                    form={loginForm}
                 />
             </div>
         </div>
