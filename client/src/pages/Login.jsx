@@ -18,7 +18,7 @@ const Login = () => {
                 loginForm.resetFields();
                 navigate('/app/task');
             } else {
-                message.error(data.payload.response.data.message || "Login Failed, try again!");
+                message.error(data.payload.response.data.message || data.payload.message || "Login Failed, try again!");
             }
         });
     }

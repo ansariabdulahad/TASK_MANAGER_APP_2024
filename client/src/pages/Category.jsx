@@ -1,5 +1,5 @@
 import { DeleteOutlined, EditOutlined, FileAddOutlined } from '@ant-design/icons'
-import { Button, Card, Form, message, Modal } from 'antd'
+import { Button, Card, Empty, Form, message, Modal } from 'antd'
 import React, { useEffect, useState } from 'react'
 import CommonForm from '../components/CommonForm'
 import { categoryFields } from '../config/formFields'
@@ -148,7 +148,9 @@ const Category = () => {
                                 </div>
                             </Card>
                         ))
-                    ) : (null)
+                    ) : (
+                        <Empty />
+                    )
                 }
             </div>
 

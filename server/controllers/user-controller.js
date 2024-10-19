@@ -47,6 +47,14 @@ export const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
 
+        // Validate request
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "Email and password are required!",
+            });
+        }
+
         // find user
         const checkUser = await User.findOne({ email });
 
@@ -64,21 +72,23 @@ export const loginUser = async (req, res) => {
 
         // make it loggedin
         checkUser.isLoggedIn = true;
+        const token = await checkUser.generateToken();
 
         // generate token and send to client
         res.status(200).json({
             success: true,
             message: "User logged in successfully!",
             data: checkUser,
-            token: await checkUser.generateToken(),
+            token,
             userId: checkUser._id.toString()
         });
 
     } catch (error) {
+        console.error("Login error:", error); // Log the error for debugging
         res.status(500).json({
             success: false,
-            message: "User registration failed",
-            error: error
+            message: "User login failed due to server error.",
+            error: error.message, // Send only the message, not the full error object
         });
     }
 }
