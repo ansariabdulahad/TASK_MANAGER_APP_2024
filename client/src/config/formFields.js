@@ -86,3 +86,13 @@ export const taskFields = [
         placeholder: 'Enter task category'
     }
 ];
+
+export const categoryFields = [
+    {
+        label: 'Category',
+        name: 'category',
+        type: 'text',
+        fieldType: 'input',
+        placeholder: 'Enter category'
+    },
+];

@@ -49,6 +49,28 @@ export const createNewCategory = createAsyncThunk('categories/createNewCategory'
             return rejectWithValue(error);
         }
     }
+);
+
+export const deleteCategory = createAsyncThunk('categories/deleteCategory',
+    async (id, { rejectWithValue }) => {
+        try {
+            const { data } = await apiClient.delete(`/api/categories/${id}`, { withCredentials: true });
+            return data;
+        } catch (error) {
+            return rejectWithValue(error);
+        }
+    }
+);
+
+export const editCategory = createAsyncThunk('categories/deleteCategory',
+    async ({ id, formData }, { rejectWithValue }) => {
+        try {
+            const { data } = await apiClient.put(`/api/categories/${id}`, formData, { withCredentials: true });
+            return data;
+        } catch (error) {
+            return rejectWithValue(error);
+        }
+    }
 )
 
 const categorySlice = createSlice({

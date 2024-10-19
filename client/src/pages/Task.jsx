@@ -38,6 +38,13 @@ const Task = () => {
             title: 'Status',
             dataIndex: 'status',
             key: 'status',
+            render: (text) => (
+                <div className={`p-2 rounded shadow-sm font-bold w-fit 
+                    ${text == 'completed' ? 'bg-green-500 text-white' :
+                        text == 'in-progress' ? 'bg-yellow-500' : 'bg-red-500 text-white'}`}>
+                    {text}
+                </div>
+            )
         },
         {
             title: 'Due Date',
@@ -58,7 +65,7 @@ const Task = () => {
                     <Button
                         icon={<EditOutlined />}
                         shape='circle'
-                        className='shadow-sm bg-yellow-600 text-white'
+                        className='shadow-sm bg-green-600 text-white'
                         onClick={() => handleEditTask(obj)}
                     />
                     <Button
@@ -113,6 +120,7 @@ const Task = () => {
                 setTaskEdit(false);
                 setEditTaskId(null);
             } else {
+                setTaskModal(false);
                 setFetchAllTask(false);
                 setTaskEdit(false);
                 setEditTaskId(null);
@@ -187,7 +195,8 @@ const Task = () => {
                 let updatedTasks = data?.payload?.data.map((item) => ({
                     ...item,
                     key: item._id,
-                    category: item?.category?.toLowerCase()
+                    category: item?.category?.toLowerCase(),
+                    dueDate: item?.dueDate ? dayjs(item.dueDate).format("YYYY-MM-DD") : null
                 }));
                 setTasksData(updatedTasks);
             } else {
@@ -202,11 +211,13 @@ const Task = () => {
                 let updatedTasks = data?.payload?.data.map((item) => ({
                     ...item,
                     key: item._id,
-                    category: item?.category?.toLowerCase()
+                    category: item?.category?.toLowerCase(),
+                    dueDate: item?.dueDate ? dayjs(item.dueDate).format("YYYY-MM-DD") : null
                 }));
                 setTasksData(updatedTasks);
             } else {
                 message.error(data.payload.response.data.message || "Server error!");
+                sessionStorage.removeItem("authToken");
             }
         });
     }, [dispatch, fetchAllTask, editTaskId, isTaskDeleted, taskCreated]);
@@ -296,5 +307,3 @@ const Task = () => {
 }
 
 export default Task
-
-// next timework first push the commit and check the filter functions

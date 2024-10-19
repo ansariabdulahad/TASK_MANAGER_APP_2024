@@ -10,6 +10,14 @@ export const createCategory = async (req, res) => {
             userId,
             category
         });
+
+        const isCategoryExist = await Category.findOne({ userId, category });
+
+        if (isCategoryExist) return res.status(403).json({
+            success: false,
+            message: "Category already exists"
+        });
+
         await newCategory.save();
         res.status(201).json({
             success: true,

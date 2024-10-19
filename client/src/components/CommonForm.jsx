@@ -67,6 +67,7 @@ const CommonForm = ({ formFields, form, buttonText, onSubmit, formType }) => {
                             className='shadow-sm rounded-none'
                             style={{ width: '100%' }}
                             size='large'
+                            format="YYYY-MM-DD"
                         />
                     </Form.Item>
                 );
