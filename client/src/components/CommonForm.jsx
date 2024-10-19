@@ -87,7 +87,8 @@ const CommonForm = ({ formFields, form, buttonText, onSubmit, formType }) => {
             }
 
             <Button
-                className='shadow-sm font-bold w-full rounded-none'
+                className={`shadow-sm font-bold w-full rounded-none 
+                    ${formType === 'editTaskForm' ? 'bg-red-500' : ''}`}
                 size='large'
                 type='primary'
                 htmlType='submit'

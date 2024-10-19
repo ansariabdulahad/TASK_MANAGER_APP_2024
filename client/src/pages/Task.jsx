@@ -1,17 +1,24 @@
 import { Button, Divider, Form, message, Modal, Select, Table } from 'antd'
 import React, { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux';
-import { createNewTask, getAllTasks, getTaskByFilter } from '../store/slices/task-slice';
-import { FileAddOutlined } from '@ant-design/icons';
+import { createNewTask, deleteTask, editTask, getAllTasks, getTaskByFilter } from '../store/slices/task-slice';
+import { DeleteOutlined, EditOutlined, FileAddOutlined } from '@ant-design/icons';
 import CommonForm from '../components/CommonForm';
 import { taskFields } from '../config/formFields';
+import { getAllCategory } from '../store/slices/category-slice';
+import dayjs from 'dayjs';
 
 const Task = () => {
 
     const dispatch = useDispatch();
     const [tasksData, setTasksData] = useState([]);
+    const [categoryList, setCategoryList] = useState([]);
     const [taskModal, setTaskModal] = useState(false);
     const [fetchAllTask, setFetchAllTask] = useState(false);
+    const [taskEdit, setTaskEdit] = useState(false);
+    const [isTaskDeleted, setIsTaskDeleted] = useState(false);
+    const [editTaskId, setEditTaskId] = useState(null);
+    const [taskCreated, setTaskCreated] = useState(false);
     const [filterCategory, setFilterCategory] = useState("");
     const [filterStatus, setFilterStatus] = useState("");
     const [taskForm] = Form.useForm();
@@ -46,12 +53,81 @@ const Task = () => {
             title: 'Action',
             dataIndex: 'action',
             key: 'action',
+            render: (_, obj) => (
+                <div className='flex items-center gap-2'>
+                    <Button
+                        icon={<EditOutlined />}
+                        shape='circle'
+                        className='shadow-sm bg-yellow-600 text-white'
+                        onClick={() => handleEditTask(obj)}
+                    />
+                    <Button
+                        icon={<DeleteOutlined />}
+                        shape='circle'
+                        className='shadow-sm bg-red-500 text-white'
+                        onClick={() => handleDeleteTask(obj._id)}
+                    />
+                </div>
+            )
         },
     ];
+
+    // handle delete task
+    const handleDeleteTask = (getCurrentId) => {
+        dispatch(deleteTask(getCurrentId)).then((data) => {
+            if (data.payload.success) {
+                message.success(data.payload.message || "Task deleted successfully!");
+                setFetchAllTask(true);
+                setIsTaskDeleted(true);
+            } else {
+                setFetchAllTask(false);
+                setIsTaskDeleted(false);
+                message.error(data.payload.response.data.message || "Unable to delete task!");
+            }
+        });
+    }
+
+    // handle edit task
+    const handleEditTask = (getTask) => {
+        let values = {
+            title: getTask?.title,
+            description: getTask?.description,
+            status: getTask?.status,
+            dueDate: getTask?.dueDate ? dayjs(getTask?.dueDate) : null,
+            category: getTask?.category
+        }
+        setTaskModal(true);
+        setTaskEdit(true);
+        setEditTaskId(getTask?._id);
+        taskForm.setFieldsValue(values);
+    }
+
+    // hanlde edit task
+    const handleEditTaskOnFinish = (values) => {
+        dispatch(editTask({ id: editTaskId, formData: values })).then((data) => {
+            if (data.payload.success) {
+                message.success(data.payload.message || "Task edited successfully!");
+                taskForm.resetFields();
+                setTaskModal(false);
+                setFetchAllTask(true);
+                setTaskEdit(false);
+                setEditTaskId(null);
+            } else {
+                setFetchAllTask(false);
+                setTaskEdit(false);
+                setEditTaskId(null);
+                message.error(data.payload.response.data.message || "Unable to edit task!");
+            }
+        });
+    }
 
     // handle task modal close
     const handleTaskModalCancel = () => {
         setTaskModal(false);
+        setFetchAllTask(true);
+        setTaskEdit(false);
+        setEditTaskId(null);
+        taskForm.resetFields();
     }
 
     const handleCreateNewTask = (values) => {
@@ -61,8 +137,10 @@ const Task = () => {
                 taskForm.resetFields();
                 setTaskModal(false);
                 setFetchAllTask(true);
+                setTaskCreated(true);
             } else {
                 setFetchAllTask(false);
+                setTaskCreated(false);
                 message.error(data.payload.response.data.message || "Unable to create task!");
             }
         });
@@ -74,19 +152,42 @@ const Task = () => {
         if (values == "pending" || values == "in-progress" || values == "completed") {
             setFilterStatus(values);
         } else {
-            setFilterCategory(values);
+            setFilterCategory(values.toLowerCase());
         }
     }
+
+    // handle filter change
+    const handleFilterReset = () => {
+        setFilterCategory("");
+        setFilterStatus("");
+    }
+
+    // fetch categories
+    useEffect(() => {
+        dispatch(getAllCategory()).then((data) => {
+            if (data?.payload?.success) {
+                let updatedcategory = data?.payload?.data.map((item) => ({
+                    value: item.category.toLowerCase(),
+                    label: item.category.toUpperCase()
+                }));
+                setCategoryList(updatedcategory);
+            } else {
+                message.error(data.payload.response.data.message || "Server error!");
+            }
+        });
+    }, [dispatch]);
 
     useEffect(() => {
         let filter = "";
         if (filterCategory) filter += `category=${filterCategory}&`;
         if (filterStatus) filter += `status=${filterStatus}`;
+
         dispatch(getTaskByFilter(filter)).then((data) => {
             if (data?.payload?.success) {
                 let updatedTasks = data?.payload?.data.map((item) => ({
                     ...item,
-                    key: item._id
+                    key: item._id,
+                    category: item?.category?.toLowerCase()
                 }));
                 setTasksData(updatedTasks);
             } else {
@@ -100,14 +201,15 @@ const Task = () => {
             if (data?.payload?.success) {
                 let updatedTasks = data?.payload?.data.map((item) => ({
                     ...item,
-                    key: item._id
+                    key: item._id,
+                    category: item?.category?.toLowerCase()
                 }));
                 setTasksData(updatedTasks);
             } else {
                 message.error(data.payload.response.data.message || "Server error!");
             }
         });
-    }, [dispatch, fetchAllTask]);
+    }, [dispatch, fetchAllTask, editTaskId, isTaskDeleted, taskCreated]);
 
     return (
         <div className='p-4'>
@@ -115,21 +217,17 @@ const Task = () => {
                 <div className='border-r border-black'>
                     <h2 className='mx-1'>Filter By: </h2>
                 </div>
-                <div className='flex flex-col sm:flex-row gap-2 sm:gap-4 items-center justify-center'>
-                    <div className='flex flex-col sm:flex-row items-start gap-1 w-full'>
+                <div className='flex flex-col sm:flex-row gap-2 sm:gap-4'>
+                    <div className='flex flex-col sm:flex-row gap-1 w-full'>
                         <label htmlFor="category">Category: </label>
                         <Select
                             placeholder="Filter by category"
                             className='mb-2 shadow-sm w-full'
-                            options={[
-                                { value: 'work', label: 'Work' },
-                                { value: 'frontend', label: 'frontend' },
-                                { value: 'backend', label: 'Backend' }
-                            ]}
+                            options={categoryList}
                             onChange={handleFilterChange}
                         />
                     </div>
-                    <div className='flex flex-col sm:flex-row items-start gap-1 w-full'>
+                    <div className='flex flex-col sm:flex-row gap-1 w-full'>
                         <label htmlFor="status">Status: </label>
                         <Select
                             placeholder="Filter by status"
@@ -142,6 +240,12 @@ const Task = () => {
                             onChange={handleFilterChange}
                         />
                     </div>
+                    <Button
+                        className='font-semibold bg-black text-white shadow-sm w-full'
+                        onClick={handleFilterReset}
+                    >
+                        Reset Filter
+                    </Button>
                 </div>
             </div>
 
@@ -175,16 +279,16 @@ const Task = () => {
 
             <Modal
                 open={taskModal}
-                title="Create a new task"
+                title={taskEdit ? 'Edit Task' : "Create a new task"}
                 onCancel={handleTaskModalCancel}
                 footer={false}
             >
                 <CommonForm
                     formFields={taskFields}
                     form={taskForm}
-                    buttonText={'Create Task'}
-                    onSubmit={handleCreateNewTask}
-                    formType={'createTaskForm'}
+                    buttonText={taskEdit ? 'Save Changes' : 'Create Task'}
+                    onSubmit={taskEdit ? handleEditTaskOnFinish : handleCreateNewTask}
+                    formType={taskEdit ? 'editTaskForm' : 'createTaskForm'}
                 />
             </Modal>
         </div>
@@ -192,3 +296,5 @@ const Task = () => {
 }
 
 export default Task
+
+// next timework first push the commit and check the filter functions

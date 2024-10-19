@@ -63,6 +63,28 @@ export const createNewTask = createAsyncThunk('tasks/createNewTask',
             return rejectWithValue(error);
         }
     }
+);
+
+export const deleteTask = createAsyncThunk('tasks/deleteTask',
+    async (id, { rejectWithValue }) => {
+        try {
+            const { data } = await apiClient.delete(`/api/tasks/${id}`, { withCredentials: true });
+            return data;
+        } catch (error) {
+            return rejectWithValue(error);
+        }
+    }
+);
+
+export const editTask = createAsyncThunk('tasks/deleteTask',
+    async ({ id, formData }, { rejectWithValue }) => {
+        try {
+            const { data } = await apiClient.put(`/api/tasks/${id}`, formData, { withCredentials: true });
+            return data;
+        } catch (error) {
+            return rejectWithValue(error);
+        }
+    }
 )
 
 const taskSlice = createSlice({
